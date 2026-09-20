@@ -1,4 +1,4 @@
-# SSIE 641 — Advanced Topics in Network Science
+# SSIE 641 : Advanced Topics in Network Science
 
 Coursework, computational experiments, and selected mini-projects from
 **SSIE 641: Advanced Topics in Network Science** at School of Systems Science and Industrial Engineering, Binghamton University.
