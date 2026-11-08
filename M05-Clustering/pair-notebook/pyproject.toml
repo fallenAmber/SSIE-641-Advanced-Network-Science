@@ -1,0 +1,12 @@
+# marimo's project settings for this module. Nothing else reads this file:
+# the notebook's packages are in notebook.py's own `# /// script` header.
+#
+# marimo 0.25 opens a notebook WITHOUT running it (auto_instantiate defaults
+# to false). The page's furniture — "How the exercises work", the progress
+# bar, the focus switch — is the OUTPUT of plumbing cells, so an unrun
+# notebook has none of it, and focus mode then hides those empty cells too.
+# Seen live: after the notebook server restarted, the notice and the bar
+# were gone until the tutor next added a cell. Setting it in the script
+# header does not take effect; this file does (checked in headless Chromium).
+[tool.marimo.runtime]
+auto_instantiate = true

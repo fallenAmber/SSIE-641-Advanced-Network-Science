@@ -1,0 +1,830 @@
+# The whole module (module 5 of the course), one chapter: Finding Groups in
+# Code (cp1_graph to cp8_dcsbm). About 90 minutes. The student finds groups in
+# the world airport network with Leiden, scores them against continents and
+# countries with an NMI and an ARI they write, then writes a stochastic block
+# model and a degree-corrected one that build airport networks from groups.
+#
+# HOW EVERY CHECKPOINT IN THIS MODULE RUNS
+#   build the box → say the ask: line → WAIT for Submit to Tutor.
+#   On Submit you are told what the hidden check found.
+#     pass → checkpoint_done FIRST (the note cell lands on the page)
+#            → ONE specific line about what they wrote → the ➤ lines of
+#            reveal_after → ask "Do you have a question about this
+#            exercise, or shall we move on?" → WAIT. A question: answer it,
+#            log_detour, then "Anything else, or shall we move on?". None:
+#            the next checkpoint's build, in that turn.
+#     fail / error → say what you can SEE in their code or its output, and
+#            ask ONE smaller question, or show a short example (below).
+#   There is no quiz after the code. The code is the checkpoint.
+#   checkpoint_done: student_response is "(no answer — the code is their
+#   answer)" unless they typed an answer about this exercise.
+#
+# Each exercise has several steps. When a submit fails, find the FIRST step
+# that is wrong and talk about that one only.
+#
+# NEVER write their line. When they are stuck you may show an example in
+# the terminal: at most three lines, on a DIFFERENT small object (a
+# four-node network, a short list), showing how the API is called and what
+# it returns. Never the line their blank needs.
+# Never describe a picture or state a number you cannot read. You see their
+# code (nb_read_code) and the check's result, not their screen.
+# The scaffolds and briefs below are the module's: pass them verbatim.
+#
+# PROSE. Everything a student reads in the notebook is one or two sentences:
+# the briefs, the notes, the ➤ lines. Keep it that way when you edit.
+# No pronouns (it, its, that, this, they, them): name the thing. No
+# metaphors: say what the code does ("counts the nodes with g.vcount()",
+# never "asks g"). Every list or array a comment names is defined where it
+# first appears, with a short example, and every name a cell takes from an
+# earlier exercise is listed in the brief's "Carried over" (a script checks).
+#
+# Leiden is not deterministic. Their groups differ a little from run to run
+# (17 to 20 groups, NMI against the continents 0.68 to 0.73), so never
+# quote an exact figure of theirs and never call a run wrong for a different
+# group count. Say "about".
+
+chapter:
+  id: ch1
+  title: "Finding Groups in Code"
+  goal: |
+    Student builds the world airport network in igraph and finds its busiest
+    airport; finds groups with Leiden by maximising modularity; writes NMI
+    and ARI and scores the groups against continents and countries; writes a
+    stochastic block model that builds an airport network from groups and
+    sees that it has no hubs; then writes the degree-corrected block model,
+    with the quiz's estimates, and gets the hubs back.
+checkpoints:
+
+  - id: cp1_graph
+    goal: |
+      The route list becomes an igraph network whose nodes and edges are counted
+      with g's methods, and whose busiest airport is found.
+    build: |
+      First nb_add_cell, name "cp1_graph_scratch", show_code true, with the
+      scratch code in AGENTS.md ("The scratch cell comes first"). Then
+      nb_add_exercise, name "cp1_graph", checkpoint "cp1_graph",
+      check "check_graph(g, n_nodes, n_edges, k_max, hub)", with this
+      scaffold EXACTLY:
+
+      ```
+      # Already defined in the notebook:
+      #   `ig` is the igraph library (the notebook ran `import igraph as ig`; in your own file, write that line first).
+      #   `route_list` is a list with one pair (i, j) for each route; i and j are airport numbers (route_list[0] is the first route).
+      #   `codes` is a list with the code of each airport: codes[0] is the code of airport number 0.
+      #   `continent` and `country` are lists in the same order: continent[0] and country[0] belong to airport number 0
+      #   (a continent is a two-letter code like AF or EU).
+      print(route_list[0], codes[0], continent[0], country[0])
+
+      # 1. `g`: the airport network, with one node for each airport and one edge for each route.
+      g = ___
+
+      # 2. `n_nodes` and `n_edges`: the number of nodes and the number of edges of g (two integers).
+      #    Use the methods of g; do not type the numbers.
+      n_nodes = ___
+      n_edges = ___
+
+      # 3. `g.degree()` is a list with the number of routes of each airport, in the order of the airport numbers:
+      #    g.degree()[0] is the number of routes of airport number 0.
+      #    `k_max`: the largest number in g.degree() (one integer).
+      #    `hub`: the code of the airport that has k_max routes (a string).
+      k_max = ___
+      hub = ___
+
+      print(n_nodes, n_edges, k_max, hub)
+      plot_world(mark=hub)
+      ```
+
+      The `instructions` you pass, EXACTLY:
+
+         ### Exercise: the airport network
+
+         /// details | 📋 Task
+             type: lh-task
+
+         **Carried over:**
+         - `ig` is igraph, `np` is numpy, and `plot_world(mark=hub)` draws the airports and routes on a map and rings the airport with the code `hub`.
+         - `route_list` holds one pair of airport numbers for each route, and `codes`, `continent` and `country` hold the code, the continent and the country of each airport number.
+
+         **Task:**
+         - Build the network from the routes in `route_list`.
+         - Count the nodes and the edges of the network with the methods of `g`.
+         - Find the largest degree in `g`, and the code of the airport with the largest degree.
+
+         **Other tools:**
+         - `[3, 9, 4].index(9)` gives `1`, the position of 9 in the list, and `np.argmax([3, 9, 4])` also gives `1`.
+         - `["a", "b", "c"][1]` gives `"b"`, the entry at position 1.
+         ///
+    ask: |
+      Build the box; say nothing about putting it up:
+      "Fill in the blanks, run the cell, and press Submit to Tutor when you want me to look."
+      END YOUR TURN and wait for Submit.
+    accept: |
+      The hidden check (check_graph) passes when g has one node per airport
+      and the routes of route_list, n_nodes and n_edges match it, k_max is
+      the largest degree and hub is the code of an airport with it.
+      `ig.Graph(n=len(codes), edges=route_list)`, `g.vcount()`, `g.ecount()`,
+      `max(g.degree())`, `codes[g.degree().index(k_max)]`.
+      `ig.Graph(edges=route_list)` without n passes only if every airport has
+      a route, which is true here. Typing the numbers by hand passes if they
+      are right: say the comment asks for the methods of g. `hub` as a number
+      fails, and the picture has no ringed dot: ask which list holds the code
+      of each airport number. If they ask how to find the position of the
+      largest number, name the call (`list.index` or `np.argmax`, see Other
+      tools) and let them write the line.
+    hints:
+      - "The first blank makes the network. Which two inputs does `ig.Graph` need: the number of nodes and the list of edges?"
+      - "Which two methods of g count the nodes and the edges?"
+      - "`g.degree()` is a list with one number for each airport. Which position in the list holds the largest number?"
+      - "The position is an airport number. Which list holds the code of each airport number?"
+    reveal_after: |
+      Say ONLY the ➤ lines. The rest is the note cell's.
+      ➤ The busiest airport, AMS, has 246 routes, and the average airport has about 11.
+    note: |
+      ### The airport network
+
+      ```python
+      g = ig.Graph(n=len(codes), edges=route_list)
+      g.vcount(), g.ecount()                  # 3360, 18783
+      k_max = max(g.degree())
+      hub = codes[g.degree().index(k_max)]
+      ```
+
+      Airports are from OurAirports and routes from OpenFlights (2014); the average airport has about 11 routes.
+
+  - id: cp2_leiden
+    goal: |
+      Leiden, with modularity as the objective, splits the network into groups
+      that are counted and scored.
+    build: |
+      First nb_add_cell, name "cp2_leiden_scratch", show_code true, with the
+      scratch code in AGENTS.md ("The scratch cell comes first"). Then
+      nb_add_exercise, name "cp2_leiden", checkpoint "cp2_leiden",
+      check "check_leiden(g, groups, n_groups, q)", with this scaffold EXACTLY:
+
+      ```
+      # `g` is the airport network from the last exercise.
+
+      # 1. `leiden`: the result of the method `g.community_leiden`, with modularity as the objective.
+      leiden = ___
+
+      # 2. `groups`: a list with the group number of each airport, in the order of the airport numbers.
+      #    For example [0, 0, 1] means that airports 0 and 1 are in group 0 and airport 2 is in group 1.
+      groups = ___
+
+      # 3. `n_groups`: the number of different groups (one integer).
+      n_groups = ___
+
+      # 4. `q`: the modularity of `groups` on g (one number).
+      q = ___
+
+      print(n_groups, "groups, modularity", round(q, 3))
+      plot_world(groups)
+      ```
+
+      The `instructions` you pass, EXACTLY:
+
+         ### Exercise: groups with Leiden
+
+         /// details | 📋 Task
+             type: lh-task
+
+         **Carried over:**
+         - `g` is the airport network from cp1, and `plot_world(groups)` draws the airports and routes on a map, with a colour for each of the twelve biggest groups.
+
+         **Task:**
+         - Find groups of airports with Leiden, with modularity as the objective.
+         - Save the group of each airport, the number of groups and the modularity.
+
+         **Other tools:**
+         - `community_leiden` is a method of `g`, written `g.community_leiden(...)`. On the [igraph page](https://python.igraph.org/en/stable/api/igraph.Graph.html#community_leiden) the first argument `graph` is `g`, and the option that sets the objective is `objective_function`.
+         - A method that finds groups returns a clustering. The clustering's `.membership` is a list with one group number for each node, like `[0, 0, 1, 1]`.
+         - `ig.Graph.Ring(4).modularity([0, 0, 1, 1])` gives the modularity of a list of group numbers on a small network.
+         ///
+    ask: |
+      Build the box; say nothing about putting it up:
+      "Fill in the blanks, run the cell, and press Submit to Tutor when you want me to look."
+      END YOUR TURN and wait for Submit.
+    accept: |
+      The hidden check (check_leiden) passes when groups has one entry per
+      airport, n_groups is the number of different entries, q is the
+      modularity of groups on g and is at least 0.6.
+      `g.community_leiden(objective_function="modularity")`, `.membership`,
+      `len(set(groups))`, `g.modularity(groups)`.
+      Leaving out the objective gives igraph's default, which is not
+      modularity: the groups are tiny and q is near zero, so the check
+      fails. Ask what the picture's colours show, and which option of the
+      method decides what is maximised. `groups = leiden` (the result, not
+      its membership) fails: ask how many entries `groups` has.
+      The check cannot tell Leiden from another method that reaches a
+      modularity of 0.6 (Louvain does), so read the call in their code.
+      A different group count from a classmate's is fine: Leiden is random.
+    hints:
+      - "The first blank is a method of g. Which option of the method sets what Leiden maximises?"
+      - "The result of the method is a clustering, not yet a list of group numbers. Which part of the clustering is the list?"
+      - "How many airports are there, and how many entries does `groups` have?"
+      - "What would the modularity of a good set of groups be, compared with the number you got?"
+    reveal_after: |
+      Say ONLY the ➤ lines. The rest is the note cell's.
+      ➤ Leiden is random, so another run can give a few groups more or fewer.
+    note: |
+      ### Leiden, maximising modularity
+
+      ```python
+      leiden = g.community_leiden(objective_function="modularity")
+      groups = leiden.membership
+      n_groups, q = len(set(groups)), g.modularity(groups)
+      ```
+
+      Leiden finds about 17 to 20 groups, with a modularity near 0.67, and another run can differ a little.
+
+  - id: cp3_nmi
+    goal: |
+      Normalized mutual information, written as a function from a table of
+      counts.
+    build: |
+      First nb_add_cell, name "cp3_nmi_scratch", show_code true, with the
+      scratch code in AGENTS.md ("The scratch cell comes first"). Then
+      nb_add_exercise, name "cp3_nmi", checkpoint "cp3_nmi",
+      check "check_nmi(nmi)", with this scaffold EXACTLY:
+
+      ```
+      # `a` and `b` are two lists with one label for each airport, like a = ["EU", "EU", "AS"] and b = [0, 0, 1].
+      # A label is a string or a number. nmi(a, b) is 1 when the two lists give the same grouping.
+
+      def nmi(a, b):
+          # 1. `ia` and `ib`: the labels of a and of b, renamed 0, 1, 2, ...
+          #    (two numpy arrays with one entry for each airport; ["EU", "EU", "AS"] becomes [1, 1, 0]).
+          ia = ___
+          ib = ___
+
+          # 2. `table[i, j]`: the number of airports with label i in ia and label j in ib.
+          #    Add 1 to a cell for each airport. `p_ab[i, j]` is the share of all airports in cell (i, j).
+          table = np.zeros((ia.max() + 1, ib.max() + 1))
+          ___
+          p_ab = table / table.sum()
+
+          # 3. `p_a`: a list with the share of airports with each label of a (the row totals of p_ab).
+          #    `p_b`: the same for b (the column totals of p_ab).
+          p_a = ___
+          p_b = ___
+
+          # 4. `h_a` and `h_b`: the entropy of a and the entropy of b.
+          #    The entropy of a is -1 times the sum of p_a * log(p_a); for b, use p_b.
+          h_a = ___
+          h_b = ___
+
+          # 5. `mi`: the mutual information, the sum of p_ab[i, j] * log(p_ab[i, j] / (p_a[i] * p_b[j]))
+          #    over the cells where p_ab is not 0. `seen` is True in the cells where p_ab is not 0.
+          seen = p_ab > 0
+          mi = ___
+
+          return ___
+
+      print(nmi([0, 0, 1, 1], [0, 0, 1, 1]), nmi([0, 0, 1, 1], [0, 1, 0, 1]))
+      ```
+
+      The `instructions` you pass, EXACTLY:
+
+         ### Exercise: write NMI
+
+         /// details | 📋 Task
+             type: lh-task
+
+         **Carried over:**
+         - `np` is numpy.
+
+         **Task:**
+         - Write `nmi(a, b)` from the lecture's definition,
+           $\mathrm{NMI} = \dfrac{2\,I(a;b)}{H(a) + H(b)}$, with
+           $H = -\sum p \ln p$ and $I = \sum p_{ab} \ln \dfrac{p_{ab}}{p_a\,p_b}$.
+         - $p_{ab}$ is the share of airports with each pair of labels, and $p_a$ and $p_b$ are the row totals and the column totals of $p_{ab}$.
+         - The last line must print 1.0 and 0.0.
+
+         **Other tools:**
+         - `np.unique(x, return_inverse=True)[1]` numbers the labels of `x` from 0: for `["b", "a", "b"]` the result is `[1, 0, 1]`.
+         - `np.add.at(t, (i, j), 1)` adds 1 to `t[i, j]` for each pair taken from the lists `i` and `j`.
+         - `np.outer([1, 2], [3, 4])` is the table of every product: `[[3, 4], [6, 8]]`.
+         ///
+    ask: |
+      Build the box; say nothing about putting it up:
+      "Fill in the blanks, run the cell, and press Submit to Tutor when you want me to look."
+      END YOUR TURN and wait for Submit.
+    accept: |
+      The hidden check (check_nmi) passes when their nmi matches the
+      lecture's definition on small tables, on strings (continent against
+      country) and on real groups. Any log base passes, as the base cancels.
+      `np.unique(a, return_inverse=True)[1]`, `np.add.at(table, (ia, ib), 1)`,
+      `p_ab.sum(axis=1)` and `axis=0`, `-(p_a * np.log(p_a)).sum()`,
+      `(p_ab[seen] * np.log(p_ab[seen] / np.outer(p_a, p_b)[seen])).sum()`,
+      `2 * mi / (h_a + h_b)`.
+      Wrong turns: no factor 2; the log of zero cells (nan: ask what p_ab is
+      in an empty cell); summing the table where p_ab is 0 without `seen`;
+      using the labels as indexes, which fails on strings.
+    hints:
+      - "What does the last print give for the first pair? What should the last print give?"
+      - "Try np.unique on a short list of strings. What does the second part of the answer hold?"
+      - "An empty cell has p_ab equal to 0. What is the log of 0, and which line keeps the empty cells out?"
+      - "Look at the formula again: what multiplies the mutual information on top?"
+    reveal_after: |
+      Say ONLY the ➤ lines. The rest is the note cell's.
+      ➤ Renaming the groups does not change NMI, because NMI reads only the table of counts.
+    note: |
+      ### NMI from a table of counts
+
+      ```python
+      ia, ib = np.unique(a, return_inverse=True)[1], np.unique(b, return_inverse=True)[1]
+      table = np.zeros((ia.max() + 1, ib.max() + 1)); np.add.at(table, (ia, ib), 1)
+      p_ab = table / table.sum(); p_a, p_b = p_ab.sum(axis=1), p_ab.sum(axis=0)
+      h_a, h_b = -(p_a * np.log(p_a)).sum(), -(p_b * np.log(p_b)).sum()
+      seen = p_ab > 0
+      mi = (p_ab[seen] * np.log(p_ab[seen] / np.outer(p_a, p_b)[seen])).sum()
+      nmi = 2 * mi / (h_a + h_b)
+      ```
+
+      Only the table of counts matters, so renaming the groups changes nothing. Tip: `np.add.at` fills the table without a loop over the airports.
+
+  - id: cp4_ari
+    goal: |
+      The adjusted Rand index, written as a function from the same table.
+    build: |
+      First nb_add_cell, name "cp4_ari_scratch", show_code true, with the
+      scratch code in AGENTS.md ("The scratch cell comes first"). Then
+      nb_add_exercise, name "cp4_ari", checkpoint "cp4_ari",
+      check "check_ari(ari)", with this scaffold EXACTLY:
+
+      ```
+      def ari(a, b):
+          # `a` and `b` are two lists with one label for each airport, as in nmi.
+          # 1. `ia` and `ib`: the labels of a and of b, renamed 0, 1, 2, ... (two numpy arrays with one entry for each airport).
+          ia = ___
+          ib = ___
+
+          # 2. `table[i, j]`: the number of airports with label i in ia and label j in ib.
+          table = np.zeros((ia.max() + 1, ib.max() + 1))
+          ___
+
+          # 3. `pairs(x)`: x is a number of airports. Return the number of different pairs that x airports form:
+          #    pairs(5) is 10, because airports 1 and 2 are the same pair as airports 2 and 1.
+          #    x can also be a numpy array of such numbers: pairs(np.array([5, 3])) is np.array([10., 3.]).
+          def pairs(x):
+              return ___
+
+          # Two airports are together in a when the two airports have the same label in a; together in b is the same for b.
+          # 4. `both`: the number of pairs together in a and together in b.
+          #    The airports of one cell of the table form pairs(the number of airports in the cell) such pairs; add up all the cells.
+          #    `in_a`: the number of pairs together in a. Each row of the table is one label of a;
+          #    add up pairs(the number of airports in the row) over the rows.
+          #    `in_b`: the number of pairs together in b: the same over the columns.
+          both = ___
+          in_a = ___
+          in_b = ___
+
+          # 5. `expected`: the value of `both` that two unrelated groupings give:
+          #    in_a times in_b, divided by the number of pairs among all n airports (`n` is the number of airports).
+          n = table.sum()
+          expected = ___
+
+          return ___
+
+      print(ari([0, 0, 1, 1], [0, 0, 1, 1]), ari([0, 0, 1, 1], [0, 1, 0, 1]))
+      ```
+
+      The `instructions` you pass, EXACTLY:
+
+         ### Exercise: write ARI
+
+         /// details | 📋 Task
+             type: lh-task
+
+         **Carried over:**
+         - `np` is numpy.
+
+         **Task:**
+         - Write `ari(a, b)`: $\mathrm{ARI} = \dfrac{\text{both} - \text{expected}}{\frac{1}{2}(\text{in}_a + \text{in}_b) - \text{expected}}$.
+         - The terms are defined in the comments of the cell.
+         - The last line must print 1.0 and a negative number.
+         ///
+    ask: |
+      Build the box; say nothing about putting it up:
+      "Fill in the blanks, run the cell, and press Submit to Tutor when you want me to look."
+      END YOUR TURN and wait for Submit.
+    accept: |
+      The hidden check (check_ari) passes when their ari matches the
+      lecture's definition on small tables, on strings and on real groups.
+      `pairs = x * (x - 1) / 2`, `pairs(table).sum()`,
+      `pairs(table.sum(axis=1)).sum()`, `pairs(table.sum(axis=0)).sum()`,
+      `in_a * in_b / pairs(n)`,
+      `(both - expected) / ((in_a + in_b) / 2 - expected)`.
+      Wrong turn: the plain Rand index (no `expected`): the check fails;
+      ask what number two unrelated groupings would give.
+      The last print gives 1.0 and about -0.5 for these two small lists.
+    hints:
+      - "What should the last print give for the first pair? What did your code give?"
+      - "Is x in pairs(x) a list of airports or a number of airports? How many pairs do 5 airports form?"
+      - "Which table do you sum pairs over for `both`, and which totals for `in_a` and `in_b`?"
+      - "What do you subtract from `both` on the top, and from the average of `in_a` and `in_b` on the bottom?"
+    reveal_after: |
+      Say ONLY the ➤ lines. The rest is the note cell's.
+      ➤ ARI is about 0 for two unrelated groupings, because the expected value is subtracted.
+    note: |
+      ### ARI from the same table
+
+      ```python
+      pairs = lambda x: x * (x - 1) / 2
+      both, in_a, in_b = pairs(table).sum(), pairs(table.sum(axis=1)).sum(), pairs(table.sum(axis=0)).sum()
+      expected = in_a * in_b / pairs(table.sum())
+      ari = (both - expected) / ((in_a + in_b) / 2 - expected)
+      ```
+
+      Subtracting the expected value is why ARI is about 0 for unrelated groupings. Tip: `pairs(table).sum()` replaces a double loop over the cells.
+
+  - id: cp5_compare
+    goal: |
+      The student's nmi and ari score Leiden against continents and countries, and
+      Infomap against countries.
+    build: |
+      First nb_add_cell, name "cp5_compare_scratch", show_code true, with the
+      scratch code in AGENTS.md ("The scratch cell comes first"). Then
+      nb_add_exercise, name "cp5_compare", checkpoint "cp5_compare",
+      check "check_compare(groups, info_groups, nmi_cont, ari_cont, nmi_ctry, ari_ctry, nmi_info, ari_info)",
+      with this scaffold EXACTLY:
+
+      ```
+      # `groups` (cp2) is the Leiden group number of each airport; `nmi` (cp3) and `ari` (cp4) are your functions.
+      # `continent[i]` and `country[i]` are the continent and the country of airport number i (cp1).
+
+      # 1. `info`: the result of the method `g.community_infomap()`.
+      #    `info_groups`: a list with the Infomap group number of each airport (like `groups` for Leiden).
+      info = ___
+      info_groups = ___
+
+      # Each score below is one number: 1 for identical groupings, about 0 for unrelated groupings.
+      # 2. Leiden's groups (`groups`) against the continents.
+      nmi_cont = ___
+      ari_cont = ___
+
+      # 3. Leiden's groups (`groups`) against the countries.
+      nmi_ctry = ___
+      ari_ctry = ___
+
+      # 4. Infomap's groups (`info_groups`) against the countries.
+      nmi_info = ___
+      ari_info = ___
+
+      print(len(set(info_groups)), "Infomap groups")
+      plot_scores([
+          ("Leiden, continents", nmi_cont, ari_cont),
+          ("Leiden, countries", nmi_ctry, ari_ctry),
+          ("Infomap, countries", nmi_info, ari_info),
+      ])
+      ```
+
+      The `instructions` you pass, EXACTLY:
+
+         ### Exercise: groups against continents and countries
+
+         /// details | 📋 Task
+             type: lh-task
+
+         **Carried over:**
+         - `g` is the airport network (cp1), `groups` holds the Leiden group number of each airport (cp2), and `nmi` and `ari` are your functions (cp3, cp4).
+         - `continent` and `country` hold the continent and the country of each airport number (cp1), and `plot_scores` draws one dot for each score.
+
+         **Task:**
+         - Find groups with Infomap.
+         - Score the Leiden groups against the continents and the countries, and the Infomap groups against the countries, with your `nmi` and `ari`.
+
+         **Other tools:**
+         - `g.community_infomap()` is another method that finds groups, called like `g.community_leiden`; try `ig.Graph.Ring(4).community_infomap()`.
+         - Infomap was not in the lecture: Infomap puts airports in one group when a random walk on the network (a path that follows a randomly chosen route at each step) stays long among the airports of the group ([Rosvall and Bergstrom, 2008](https://doi.org/10.1073/pnas.0706851105); [Rosvall, Axelsson and Bergstrom, 2009](https://doi.org/10.1140/epjst/e2010-01179-1)).
+         ///
+    ask: |
+      Build the box; say nothing about putting it up:
+      "Fill in the blanks, run the cell, and press Submit to Tutor when you want me to look."
+      END YOUR TURN and wait for Submit.
+    accept: |
+      The hidden check (check_compare) passes when info_groups has one entry
+      per airport and between 60 and 250 groups, and the six scores are
+      their nmi and ari of their own groups (and info_groups) against
+      continent and country, within 0.0001.
+      `g.community_infomap().membership`, `nmi(groups, continent)`,
+      `ari(groups, country)`, and so on. The order of the two arguments
+      does not matter. Swapped NMI and ARI, or Infomap scored against the
+      continents, fail: ask which panel they read the ARI from.
+      The check cannot tell Infomap from another method, so read the call in
+      their code. Their numbers (NMI, ARI), measured over many runs: Leiden against the
+      continents 0.67 to 0.73 and 0.50 to 0.57, against the countries about
+      0.65 and 0.32; Infomap, about 130 groups, against the countries about
+      0.8 and 0.46, and against the continents about 0.55 (NMI). So Infomap
+      matches the countries better on both scores, and Leiden matches the
+      continents better. Say "about" and do not quote their exact figures.
+    hints:
+      - "Which method finds groups with Infomap? Which part of the result do you keep?"
+      - "Which two lists go into nmi for the first score?"
+      - "Which of the six scores use info_groups, and which use groups?"
+      - "Print len(info_groups). Is the number of entries the number of airports?"
+    reveal_after: |
+      Say ONLY the ➤ lines. The rest is the note cell's.
+      ➤ Infomap makes small groups, like the countries, so Infomap matches the countries better than Leiden does.
+      ➤ Continents and countries are labels that people chose, so a low score may mean that the groups follow something else.
+    note: |
+      ### Scores against continents and countries
+
+      ```python
+      info_groups = g.community_infomap().membership
+      nmi(groups, continent), ari(groups, continent)
+      nmi(info_groups, country), ari(info_groups, country)
+      ```
+
+      Infomap, with many small groups, matches the countries better than Leiden does. A continent or a country is a label that people gave, not a true answer.
+
+  - id: cp6_sbm
+    goal: |
+      A stochastic block model: a function that builds a network from a
+      matrix of block probabilities and a group for each node.
+    build: |
+      First nb_add_cell, name "cp6_sbm_scratch", show_code true, with the
+      scratch code in AGENTS.md ("The scratch cell comes first"). Then
+      nb_add_exercise, name "cp6_sbm", checkpoint "cp6_sbm",
+      check "check_sbm(sample_sbm, g, groups, sbm_net)", with this scaffold EXACTLY:
+
+      ```
+      # `g` (cp1) is the real network and `groups` (cp2) the Leiden group number of each airport.
+      # `P[r][s]` is the share of the pairs of airports that have a route, when one airport is in group r and the other in group s.
+      # P is a K by K array, and K is the number of groups.
+      P = block_density(g, groups)
+
+      def sample_sbm(P, z):
+          # `P` is a K by K array as above and `z` is a list with the group number of each node (like `groups`).
+          # Return a network in which nodes i and j are linked with probability P[z[i]][z[j]],
+          # independently for each pair, and no node is linked to the same node (no pair with i = j).
+          z = np.asarray(z)
+          n = len(z)
+
+          # 1. `p`: an n by n array with p[i, j] = P[z[i]][z[j]].
+          p = ___
+
+          # 2. `linked`: an n by n array of True and False: True where a
+          #    new random number between 0 and 1 (one for each entry) is below p[i, j].
+          linked = ___
+
+          # 3. Keep each pair once, with i < j.
+          linked = ___
+
+          rows, cols = np.nonzero(linked)    # the two nodes of each pair that is kept
+          return ___
+
+      sbm_net = sample_sbm(P, groups)
+      print(sbm_net.vcount(), "airports and", sbm_net.ecount(), "routes; the real network has", g.ecount())
+      plot_worlds(groups, real=g, sbm=sbm_net)
+      ```
+
+      The `instructions` you pass, EXACTLY:
+
+         ### Exercise: build a network from groups
+
+         /// details | 📋 Task
+             type: lh-task
+
+         **Carried over:**
+         - `g` is the real network (cp1), `groups` holds the Leiden group number of each airport (cp2), `np` is numpy and `ig` is igraph.
+         - `block_density(g, groups)` gives the array `P` of the shares of the pairs of airports with a route, and `plot_worlds(groups, real=g, sbm=sbm_net)` draws the networks on maps side by side, with a dot as big as the number of routes of the airport.
+
+         **Task:**
+         - Write `sample_sbm(P, z)`, which builds a network from block probabilities and groups.
+         - Build a network from the Leiden groups.
+
+         **Other tools:**
+         - `np.array([[1, 2], [3, 4]])[[0, 0, 1]]` selects rows 0, 0 and 1: `[[1, 2], [1, 2], [3, 4]]`. A second `[:, [0, 0, 1]]` selects columns the same way.
+         - `np.random.default_rng().random((2, 2))` gives a 2 by 2 array of random numbers between 0 and 1.
+         - `np.triu(x, k=1)` keeps the part of the array above the diagonal.
+         - `ig.Graph(n=3, edges=[(0, 1), (1, 2)])` builds a network from a list of pairs.
+         ///
+    ask: |
+      Build the box; say nothing about putting it up:
+      "Fill in the blanks, run the cell, and press Submit to Tutor when you want me to look."
+      END YOUR TURN and wait for Submit.
+    accept: |
+      The hidden check (check_sbm) passes when sample_sbm returns a simple
+      network (no self-loop, no repeated edge) with one node per entry of z
+      whose block densities match P on a small made-up case (including a
+      block with probability 0), and sbm_net has about as many routes as the
+      real network (within 5%).
+      `P[z][:, z]`, `np.random.default_rng().random((n, n)) < p`,
+      `np.triu(linked, k=1)`, `ig.Graph(n=n, edges=list(zip(rows, cols)))`.
+      Wrong turns: `k=0` keeps the diagonal, so nodes link to themselves
+      (the check says so); one probability for every pair; `P[z, z]`, which
+      picks n entries and not an n by n table (ask what shape p has).
+      They draw with their own random numbers, so no two runs are equal.
+    hints:
+      - "What shape should p have? Print p.shape and compare the shape with n."
+      - "Which array selects, for each node, the row of P that belongs to the group of the node? What then selects the columns?"
+      - "Without the third step, which pairs are counted twice, and which pairs (i, i) are included?"
+      - "np.nonzero gives the rows and columns of the True entries. Which call turns two such lists into a network?"
+    reveal_after: |
+      Say ONLY the ➤ lines. The rest is the note cell's.
+      ➤ The chance of a route between two airports depends only on the groups of the two airports.
+    note: |
+      ### The stochastic block model
+
+      ```python
+      p = P[z][:, z]
+      linked = np.triu(np.random.default_rng().random((n, n)) < p, k=1)
+      rows, cols = np.nonzero(linked)
+      ig.Graph(n=n, edges=list(zip(rows, cols)))
+      ```
+
+      The chance of a link between two nodes depends only on the two groups. Tip: `P[z][:, z]` builds all of p without a loop over the pairs.
+
+  - id: cp7_hubs
+    goal: |
+      The SBM's network has no hubs: the largest degree and the degrees'
+      correlation with the real ones are far off.
+    build: |
+      First nb_add_cell, name "cp7_hubs_scratch", show_code true, with the
+      scratch code in AGENTS.md ("The scratch cell comes first"). Then
+      nb_add_exercise, name "cp7_hubs", checkpoint "cp7_hubs",
+      check "check_hubs(g, sbm_net, max_real, max_sbm, corr_sbm)", with this
+      scaffold EXACTLY:
+
+      ```
+      # `g` (cp1) is the real network and `sbm_net` (cp6) is the network that sample_sbm built.
+
+      # 1. `max_real` and `max_sbm`: the largest degree of g and the largest degree of sbm_net (two integers).
+      max_real = ___
+      max_sbm = ___
+
+      # 2. `corr_sbm`: the correlation between the degree of airport i in g and the degree of airport i in sbm_net,
+      #    over all airports i (one number between -1 and 1).
+      corr_sbm = ___
+
+      print(max_real, max_sbm, round(corr_sbm, 2))
+      plot_degrees(real=g, sbm=sbm_net)
+      ```
+
+      The `instructions` you pass, EXACTLY:
+
+         ### Exercise: compare the degrees
+
+         /// details | 📋 Task
+             type: lh-task
+
+         **Carried over:**
+         - `g` is the real network (cp1), `sbm_net` is the network that `sample_sbm` built (cp6), and `np` is numpy.
+         - `plot_degrees(real=g, sbm=sbm_net)` draws the CCDF of the degrees of each network; the CCDF at k is the share of airports with at least k routes.
+
+         **Task:**
+         - Find the largest degree of the real network and the largest degree of the block-model network.
+         - Find how well the degrees of the same airports agree.
+
+         **Other tools:**
+         - `np.corrcoef(x, y)[0, 1]` is the correlation of two lists: `np.corrcoef([1, 2, 3], [2, 4, 6])[0, 1]` gives `1.0`.
+         ///
+    ask: |
+      Build the box; say nothing about putting it up:
+      "Fill in the blanks, run the cell, and press Submit to Tutor when you want me to look."
+      END YOUR TURN and wait for Submit.
+    accept: |
+      The hidden check (check_hubs) passes when max_real and max_sbm are the
+      largest degrees of g and of sbm_net and corr_sbm is the correlation of
+      their degree lists. `max(g.degree())`, `max(sbm_net.degree())`,
+      `np.corrcoef(g.degree(), sbm_net.degree())[0, 1]`.
+      Their numbers: about 246 and about 40, correlation about 0.2. Say
+      "about". A mean degree instead of the largest fails: ask which airport
+      the question is about.
+    hints:
+      - "Which method gives the degree of every node? Which function then gives the largest?"
+      - "The correlation needs two lists of the same length. Which two lists?"
+      - "np.corrcoef needs two lists in the same order. Which airport is entry 0 of each list?"
+    reveal_after: |
+      Say ONLY the ➤ lines. The rest is the note cell's.
+      ➤ Every airport in a group has the same chance of a route, so the block model has no hubs.
+    note: |
+      ### No hubs
+
+      ```python
+      max(g.degree()), max(sbm_net.degree())          # about 246 and 40
+      np.corrcoef(g.degree(), sbm_net.degree())[0, 1]  # about 0.2
+      ```
+
+      The block model has the same group sizes and group densities as the real network, but no hubs.
+
+  - id: cp8_dcsbm
+    goal: |
+      The degree-corrected block model of the quiz: kappa and theta by the
+      quiz's estimates, a sampler, and the hubs back.
+    build: |
+      First nb_add_cell, name "cp8_dcsbm_scratch", show_code true, with the
+      scratch code in AGENTS.md ("The scratch cell comes first"). Then
+      nb_add_exercise, name "cp8_dcsbm", checkpoint "cp8_dcsbm",
+      check "check_dcsbm(sample_dcsbm, g, groups, kappa, theta, dc_net, max_dc, corr_dc)",
+      with this scaffold EXACTLY:
+
+      ```
+      # The quiz's model: A_ij ~ Poisson(theta_i * theta_j * w[c_i][c_j]), where A_ij is the number of routes
+      # between airports i and j (zero, one or more) and c_i is the group of airport i.
+      # `g` (cp1), `groups` (cp2) and `sbm_net` (cp6) are as before.
+      # `w[r][s]` is the number of routes between group r and group s (the quiz's m_rs); a route inside a group counts twice.
+      w = edge_ends(g, groups)
+      deg = np.array(g.degree())    # deg[i] is the number of routes of airport i
+
+      # 1. `kappa`: an array with the total degree of each group (one entry for each group):
+      #    the sum of deg over the airports of the group.
+      kappa = ___
+
+      # 2. `theta`: an array with one entry for each airport: the degree of the airport
+      #    divided by the total degree of the group of the airport.
+      theta = ___
+
+      def sample_dcsbm(theta, w, z):
+          z = np.asarray(z)
+          n = len(z)
+
+          # 3. `rate`: an n by n array with
+          #    rate[i, j] = theta[i] * theta[j] * w[z[i]][z[j]], the mean number of routes between airports i and j.
+          rate = ___
+
+          # 4. `counts`: an n by n array of random whole numbers: counts[i, j] is drawn from a Poisson
+          #    distribution with mean rate[i, j]. Keep each pair once, with i < j.
+          counts = ___
+
+          # 5. The network: the pair (i, j) is an edge counts[i, j] times.
+          rows, cols = np.nonzero(counts)    # the pairs with a count above 0
+          return ___
+
+      dc_net = sample_dcsbm(theta, w, groups)
+
+      # 6. `max_dc`: the largest degree of dc_net (one integer).
+      #    `corr_dc`: the correlation between the degree of airport i in g and the degree of airport i in dc_net,
+      #    over all airports i (one number between -1 and 1).
+      max_dc = ___
+      corr_dc = ___
+      print(max_dc, round(corr_dc, 2), dc_net.ecount(), "routes")
+      mo.vstack([plot_worlds(groups, real=g, sbm=sbm_net, dcsbm=dc_net), plot_degrees(real=g, sbm=sbm_net, dcsbm=dc_net)])
+      ```
+
+      The `instructions` you pass, EXACTLY:
+
+         ### Exercise: the degree-corrected block model
+
+         /// details | 📋 Task
+             type: lh-task
+
+         **Carried over:**
+         - `g` is the real network (cp1), `groups` holds the Leiden group number of each airport (cp2), `sbm_net` is the block-model network (cp6), `np` is numpy and `ig` is igraph.
+         - `edge_ends(g, groups)` gives the array `w` of the numbers of routes between groups, `plot_worlds(...)` draws the networks on maps side by side (a dot as big as the number of routes of the airport), `plot_degrees(...)` draws the CCDFs, and `mo.vstack([a, b])` shows the pictures `a` and `b` one above the other.
+
+         **Task:**
+         - Compute $\kappa_r$ and $\hat\theta_i = k_i / \kappa_{c_i}$ as in the quiz.
+         - Write `sample_dcsbm(theta, w, z)` and build a network from the Leiden groups.
+         - Find the largest degree of the new network and how well the degrees of the new network agree with the real degrees.
+
+         **Other tools:**
+         - `np.bincount([0, 1, 1], weights=[5, 2, 3])` adds the weights by group: `[5., 5.]`.
+         - `rng.poisson(means)` draws one Poisson number for each mean in an array, where `rng = np.random.default_rng()`.
+         - `np.repeat([[0, 1], [2, 3]], [2, 1], axis=0)` repeats row 0 twice and row 1 once: `[[0, 1], [0, 1], [2, 3]]`.
+         ///
+    ask: |
+      Build the box; say nothing about putting it up:
+      "Fill in the blanks, run the cell, and press Submit to Tutor when you want me to look."
+      END YOUR TURN and wait for Submit.
+    accept: |
+      The hidden check (check_dcsbm) passes when kappa is the total degree of
+      each group, theta is each airport's degree over its group's kappa,
+      sample_dcsbm builds a network whose degrees follow theta on a small
+      made-up case, dc_net has about the real number of routes (within 5%),
+      and max_dc and corr_dc are the largest degree of dc_net and its
+      correlation with the real degrees (at least 0.9).
+      `np.bincount(groups, weights=deg)`, `deg / kappa[groups]`,
+      `np.outer(theta, theta) * w[z][:, z]`,
+      `np.triu(np.random.default_rng().poisson(rate), k=1)`,
+      `ig.Graph(n=n, edges=np.repeat(np.column_stack([rows, cols]), counts[rows, cols], axis=0).tolist())`.
+      The pair must appear counts[i, j] times: a simple network (one edge
+      wherever counts > 0) gives about 15% too few routes and fails. Ask how
+      many times a pair with a count of 3 appears.
+      Wrong turn: theta over the whole network's degree sum, not the group's:
+      ask what the thetas of one group should add up to (1).
+      Their numbers: largest degree about 230 to 270 (it varies from run to
+      run), correlation about 0.99. A self-loop (np.triu with k=0) fails the
+      check: ask which pairs the comment says to keep.
+    hints:
+      - "kappa has one entry for each group. Which function adds the degrees by group?"
+      - "What should the thetas of one group add up to? Check the sum for one group."
+      - "Rate must be n by n. What shape is np.outer(theta, theta), and what do you multiply the array by?"
+      - "np.nonzero gives the pairs with a count above 0. How do you repeat a pair counts[i, j] times?"
+    reveal_after: |
+      Say ONLY the ➤ line. This is the end of the module. The rest is the note cell's.
+      ➤ With a theta for each airport, the network has hubs again and the degrees agree with the real degrees.
+    note: |
+      ### The degree-corrected block model
+
+      ```python
+      kappa = np.bincount(groups, weights=deg)
+      theta = deg / kappa[groups]
+      rate = np.outer(theta, theta) * w[z][:, z]
+      counts = np.triu(np.random.default_rng().poisson(rate), k=1)
+      rows, cols = np.nonzero(counts)
+      ig.Graph(n=n, edges=np.repeat(np.column_stack([rows, cols]), counts[rows, cols], axis=0).tolist())
+      ```
+
+      Each airport has a theta, so the network has hubs again and the degrees agree with the real degrees. Tip: `np.outer(theta, theta) * w[z][:, z]` builds all of the rates without a loop.

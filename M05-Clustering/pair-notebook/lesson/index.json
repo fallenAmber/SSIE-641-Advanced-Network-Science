@@ -1,0 +1,27 @@
+{
+  "module": "m05-community-detection",
+  "version": "1.0.0",
+  "notebook_view": "code",
+  "tutor_wakes_on": "submit",
+  "note_on_pass": true,
+  "marimo_version": "0.25.0",
+  "title": "Finding Groups in Code",
+  "chapters": [
+    {
+      "id": "ch1",
+      "file": "ch1-finding-groups.yaml",
+      "title": "Finding Groups in Code",
+      "checkpoints": [
+        "cp1_graph",
+        "cp2_leiden",
+        "cp3_nmi",
+        "cp4_ari",
+        "cp5_compare",
+        "cp6_sbm",
+        "cp7_hubs",
+        "cp8_dcsbm"
+      ],
+      "opening": "This module finds groups in the world airport network, scores them, and builds networks from groups."
+    }
+  ]
+}

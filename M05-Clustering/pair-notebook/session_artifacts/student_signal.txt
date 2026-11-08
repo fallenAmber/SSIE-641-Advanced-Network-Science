@@ -1,0 +1,8 @@
+cp1_graph_work
+cp2_leiden_work
+cp3_nmi_work
+cp4_ari_work
+cp5_compare_work
+cp6_sbm_work
+cp7_hubs_work
+cp8_dcsbm_work
